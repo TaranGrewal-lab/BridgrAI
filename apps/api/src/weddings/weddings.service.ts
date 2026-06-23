@@ -31,6 +31,17 @@ export class WeddingsService {
     return wedding;
   }
 
+  async findMine(clerkId: string) {
+    const user = await this.prisma.user.findUnique({ where: { clerkId } });
+    if (!user) return null;
+    const membership = await this.prisma.weddingMember.findFirst({
+      where: { userId: user.id },
+      include: { wedding: true },
+      orderBy: { wedding: { createdAt: "asc" } },
+    });
+    return membership?.wedding ?? null;
+  }
+
   async getDashboard(id: string) {
     const wedding = await this.findOne(id);
     const [events, guests, tasks, savedVendors, budgetSummary] = await Promise.all([

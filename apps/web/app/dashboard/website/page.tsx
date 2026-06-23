@@ -2,10 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useUpdateWebsite, useWebsite } from "@/lib/hooks/useWebsite";
-
-// TODO: replace with the active wedding id from session/auth context once
-// couple onboarding is wired to Clerk + the weddings API.
-const DEMO_WEDDING_ID = "demo-wedding-id";
+import { useCurrentWedding } from "@/lib/hooks/useWedding";
 
 const THEMES = ["ivory-classic", "blush-romance", "sage-garden", "gold-royale"];
 const THEME_LABELS: Record<string, string> = {
@@ -16,8 +13,10 @@ const THEME_LABELS: Record<string, string> = {
 };
 
 export default function WebsiteBuilderPage() {
-  const { data: site, isLoading, isError } = useWebsite(DEMO_WEDDING_ID);
-  const updateWebsite = useUpdateWebsite(DEMO_WEDDING_ID);
+  const { data: wedding } = useCurrentWedding();
+  const weddingId = wedding?.id ?? "";
+  const { data: site, isLoading, isError } = useWebsite(weddingId);
+  const updateWebsite = useUpdateWebsite(weddingId);
 
   const [theme, setTheme] = useState("ivory-classic");
   const [storyContent, setStoryContent] = useState("");

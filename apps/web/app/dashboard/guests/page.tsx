@@ -1,14 +1,13 @@
 "use client";
 
 import { useGuests, useUpdateInvite } from "@/lib/hooks/useGuests";
-
-// TODO: replace with the active wedding id from session/auth context once
-// couple onboarding is wired to Clerk + the weddings API.
-const DEMO_WEDDING_ID = "demo-wedding-id";
+import { useCurrentWedding } from "@/lib/hooks/useWedding";
 
 export default function GuestsPage() {
-  const { data: guests, isLoading, isError } = useGuests(DEMO_WEDDING_ID);
-  const updateInvite = useUpdateInvite(DEMO_WEDDING_ID);
+  const { data: wedding } = useCurrentWedding();
+  const weddingId = wedding?.id ?? "";
+  const { data: guests, isLoading, isError } = useGuests(weddingId);
+  const updateInvite = useUpdateInvite(weddingId);
 
   const events = Array.from(
     new Set(guests?.flatMap((g) => g.invites.map((i) => i.eventId)) ?? []),

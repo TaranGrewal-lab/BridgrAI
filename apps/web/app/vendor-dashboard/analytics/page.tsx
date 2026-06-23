@@ -1,12 +1,10 @@
 "use client";
 
-import { useVendorAnalytics } from "@/lib/hooks/useVendors";
-
-// TODO: replace with the authenticated vendor id from session/auth context.
-const DEMO_VENDOR_ID = "demo-vendor-id";
+import { useCurrentVendor, useVendorAnalytics } from "@/lib/hooks/useVendors";
 
 export default function VendorAnalyticsPage() {
-  const { data: analytics, isLoading, isError } = useVendorAnalytics(DEMO_VENDOR_ID);
+  const { data: vendor } = useCurrentVendor();
+  const { data: analytics, isLoading, isError } = useVendorAnalytics(vendor?.id ?? "");
 
   return (
     <main className="px-6 py-6">

@@ -2,13 +2,11 @@
 
 import Link from "next/link";
 import { useEvents } from "@/lib/hooks/useEvents";
-
-// TODO: replace with the active wedding id from session/auth context once
-// the couple onboarding flow is wired to Clerk + the weddings API.
-const DEMO_WEDDING_ID = "demo-wedding-id";
+import { useCurrentWedding } from "@/lib/hooks/useWedding";
 
 export default function EventsPage() {
-  const { data: events, isLoading, isError } = useEvents(DEMO_WEDDING_ID);
+  const { data: wedding } = useCurrentWedding();
+  const { data: events, isLoading, isError } = useEvents(wedding?.id ?? "");
 
   return (
     <main className="px-6 py-6">

@@ -1,10 +1,7 @@
 "use client";
 
 import { useTasks, useUpdateTask, type Task } from "@/lib/hooks/useTasks";
-
-// TODO: replace with the active wedding id from session/auth context once
-// couple onboarding is wired to Clerk + the weddings API.
-const DEMO_WEDDING_ID = "demo-wedding-id";
+import { useCurrentWedding } from "@/lib/hooks/useWedding";
 
 const COLUMNS: { status: Task["status"]; label: string }[] = [
   { status: "TODO", label: "To Do" },
@@ -20,8 +17,10 @@ const PRIORITY_COLOR: Record<Task["priority"], string> = {
 };
 
 export default function TasksPage() {
-  const { data: tasks, isLoading, isError } = useTasks(DEMO_WEDDING_ID);
-  const updateTask = useUpdateTask(DEMO_WEDDING_ID);
+  const { data: wedding } = useCurrentWedding();
+  const weddingId = wedding?.id ?? "";
+  const { data: tasks, isLoading, isError } = useTasks(weddingId);
+  const updateTask = useUpdateTask(weddingId);
 
   return (
     <main className="px-6 py-6">

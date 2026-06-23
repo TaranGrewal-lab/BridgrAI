@@ -4,10 +4,7 @@ import { useEvents } from "@/lib/hooks/useEvents";
 import { useTasks } from "@/lib/hooks/useTasks";
 import { useVendorSearch } from "@/lib/hooks/useVendors";
 import { useWeddingDashboard } from "@/lib/hooks/useWeddingDashboard";
-
-// TODO: replace with the active wedding id from session/auth context once
-// couple onboarding is wired to Clerk + the weddings API.
-const DEMO_WEDDING_ID = "demo-wedding-id";
+import { useCurrentWedding } from "@/lib/hooks/useWedding";
 
 const BUDGET_COLORS = ["bg-blush", "bg-sage", "bg-gold", "bg-charcoal/70", "bg-blush/60", "bg-sage/60", "bg-gold/60"];
 const BUDGET_HEX = ["#F6D7DC", "#C7D3C0", "#D4AF37", "#2F2F2F", "#F6D7DC99", "#C7D3C099", "#D4AF3799"];
@@ -35,9 +32,11 @@ function StatCard({ label, value, sub, ring }: { label: string; value: string; s
 }
 
 export default function DashboardPage() {
-  const { data: dashboard, isLoading, isError } = useWeddingDashboard(DEMO_WEDDING_ID);
-  const { data: events } = useEvents(DEMO_WEDDING_ID);
-  const { data: tasks } = useTasks(DEMO_WEDDING_ID);
+  const { data: wedding } = useCurrentWedding();
+  const weddingId = wedding?.id ?? "";
+  const { data: dashboard, isLoading, isError } = useWeddingDashboard(weddingId);
+  const { data: events } = useEvents(weddingId);
+  const { data: tasks } = useTasks(weddingId);
   const { data: vendorRecs } = useVendorSearch({ sort: "featured" });
 
   const widgets = dashboard?.widgets;

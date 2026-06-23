@@ -1,13 +1,10 @@
 "use client";
 
-import { useVendorAnalytics } from "@/lib/hooks/useVendors";
-
-// TODO: replace with the authenticated vendor id from session/auth context
-// once vendor onboarding is wired to Clerk.
-const DEMO_VENDOR_ID = "demo-vendor-id";
+import { useCurrentVendor, useVendorAnalytics } from "@/lib/hooks/useVendors";
 
 export default function VendorOverviewPage() {
-  const { data: analytics, isLoading, isError } = useVendorAnalytics(DEMO_VENDOR_ID);
+  const { data: vendor } = useCurrentVendor();
+  const { data: analytics, isLoading, isError } = useVendorAnalytics(vendor?.id ?? "");
 
   const countFor = (type: string) => analytics?.find((a) => a.type === type)?._count ?? 0;
 

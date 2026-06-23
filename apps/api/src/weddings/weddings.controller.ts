@@ -14,6 +14,11 @@ export class WeddingsController {
     return this.weddingsService.createForClerkUser(user.clerkId, user.email, dto);
   }
 
+  @Get("me")
+  findMine(@CurrentUser() user: AuthUser) {
+    return this.weddingsService.findMine(user.clerkId);
+  }
+
   @Get(":id")
   findOne(@Param("id") id: string) {
     return this.weddingsService.findOne(id);

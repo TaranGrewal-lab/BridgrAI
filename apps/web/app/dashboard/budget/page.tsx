@@ -1,15 +1,16 @@
 "use client";
 
 import { useBudgetItems, useBudgetSummary } from "@/lib/hooks/useBudget";
-
-// TODO: replace with the active wedding/event ids from session/auth context
-// once couple onboarding is wired to Clerk + the weddings API.
-const DEMO_WEDDING_ID = "demo-wedding-id";
-const DEMO_EVENT_ID = "demo-event-id";
+import { useCurrentWedding } from "@/lib/hooks/useWedding";
+import { useEvents } from "@/lib/hooks/useEvents";
 
 export default function BudgetPage() {
-  const { data: items, isLoading, isError } = useBudgetItems(DEMO_EVENT_ID);
-  const { data: summary } = useBudgetSummary(DEMO_WEDDING_ID);
+  const { data: wedding } = useCurrentWedding();
+  const weddingId = wedding?.id ?? "";
+  const { data: events } = useEvents(weddingId);
+  const primaryEventId = events?.[0]?.id ?? "";
+  const { data: items, isLoading, isError } = useBudgetItems(primaryEventId);
+  const { data: summary } = useBudgetSummary(weddingId);
 
   const SUMMARY_CARDS = [
     { label: "Total Estimated", value: summary?.totalEstimated ?? "0" },
