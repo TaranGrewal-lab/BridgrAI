@@ -20,7 +20,7 @@ const GUESTS = [
 
 export default function GuestsPage() {
   return (
-    <main className="min-h-screen bg-ivory px-6 py-10">
+    <main className="px-6 py-6">
       <div className="flex items-center justify-between">
         <h1 className="font-heading text-3xl text-charcoal">Guests</h1>
         <button className="rounded-full bg-gold px-6 py-2 text-sm font-medium text-ivory">

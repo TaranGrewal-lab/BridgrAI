@@ -1,4 +1,20 @@
 import Link from "next/link";
+import { Navbar } from "@/components/marketing/Navbar";
+
+const HERO_ICONS = [
+  { icon: "💰", label: "Budget Tracking" },
+  { icon: "👥", label: "Guest Management" },
+  { icon: "📋", label: "Event Planning" },
+  { icon: "🏛️", label: "Vendor Recommendations" },
+  { icon: "📅", label: "Timeline & Checklists" },
+];
+
+const TRUST_BADGES = [
+  { title: "100% Free To Use", subtitle: "No hidden charges" },
+  { title: "Trusted by 10,000+ Couples", subtitle: "Plan with confidence" },
+  { title: "Save Time & Stress", subtitle: "Everything in one place" },
+  { title: "Made For Punjabi Weddings", subtitle: "Built with love & understanding" },
+];
 
 const FEATURES = [
   "Budget Tracking",
@@ -37,35 +53,64 @@ const GALLERY_CATEGORIES = [
 export default function HomePage() {
   return (
     <main>
+      <Navbar />
+
       {/* Hero */}
-      <section className="relative overflow-hidden bg-gradient-to-b from-blush/60 via-ivory to-ivory px-6 py-24 text-center">
-        <p className="font-heading text-sm uppercase tracking-[0.3em] text-gold">
-          Forever Starts Here
-        </p>
-        <h1 className="mx-auto mt-4 max-w-3xl font-heading text-4xl font-semibold leading-tight text-charcoal md:text-6xl">
-          Plan Your Dream Punjabi Wedding
-        </h1>
-        <p className="mx-auto mt-6 max-w-xl text-lg text-charcoal/70">
-          Everything you need to organise, manage and celebrate your perfect wedding — all in one
-          place.
-        </p>
-        <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
-          <Link
-            href="/signup"
-            className="rounded-full bg-gold px-8 py-3 font-medium text-ivory shadow-lg shadow-gold/30 transition hover:opacity-90"
-          >
-            Start Planning Free
-          </Link>
-          <Link
-            href="/vendors"
-            className="rounded-full border border-charcoal/20 px-8 py-3 font-medium text-charcoal transition hover:bg-charcoal/5"
-          >
-            Browse Vendors
-          </Link>
-          <Link href="/how-it-works" className="px-6 py-3 font-medium text-charcoal/70 underline-offset-4 hover:underline">
-            Watch Demo
-          </Link>
+      <section className="grid grid-cols-1 items-center gap-10 bg-gradient-to-b from-blush/40 via-ivory to-ivory px-6 py-16 md:grid-cols-2 md:px-16">
+        <div>
+          <h1 className="font-heading text-4xl font-semibold leading-tight text-charcoal md:text-5xl">
+            Plan Your Dream
+            <br />
+            Punjabi
+            <br />
+            <span className="text-gold italic">Wedding</span>
+          </h1>
+          <p className="mt-6 max-w-md text-charcoal/70">
+            Everything you need to plan, organise and celebrate your perfect wedding — all in one
+            place.
+          </p>
+
+          <div className="mt-8 flex flex-wrap items-center gap-4">
+            <Link
+              href="/signup"
+              className="rounded-full bg-blush px-8 py-3 font-medium text-charcoal shadow-sm transition hover:opacity-90"
+            >
+              Start Planning Free
+            </Link>
+            <Link
+              href="/how-it-works"
+              className="flex items-center gap-2 px-4 py-3 font-medium text-charcoal/70 hover:text-charcoal"
+            >
+              <span className="flex h-8 w-8 items-center justify-center rounded-full border border-charcoal/30">
+                ▶
+              </span>
+              Watch Demo
+            </Link>
+          </div>
+
+          <div className="mt-10 grid grid-cols-3 gap-4 sm:grid-cols-5">
+            {HERO_ICONS.map((f) => (
+              <div key={f.label} className="text-center text-xs text-charcoal/60">
+                <div className="mx-auto mb-1 flex h-10 w-10 items-center justify-center rounded-full bg-white text-lg shadow-sm">
+                  {f.icon}
+                </div>
+                {f.label}
+              </div>
+            ))}
+          </div>
         </div>
+
+        <div className="aspect-[4/3] rounded-3xl bg-gradient-to-br from-blush/60 to-sage/30" />
+      </section>
+
+      {/* Trust badges */}
+      <section className="grid grid-cols-2 gap-6 border-y border-sage/30 bg-white px-6 py-8 text-center sm:grid-cols-4">
+        {TRUST_BADGES.map((b) => (
+          <div key={b.title}>
+            <p className="font-heading text-sm text-charcoal">{b.title}</p>
+            <p className="text-xs text-charcoal/50">{b.subtitle}</p>
+          </div>
+        ))}
       </section>
 
       {/* Features */}
