@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import Navbar from "@/components/marketing/Navbar";
+import { Navbar } from "@/components/marketing/Navbar";
 import { useVendorSearch } from "@/lib/hooks/useVendors";
 
 const CATEGORIES = [

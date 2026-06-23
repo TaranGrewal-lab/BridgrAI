@@ -27,7 +27,7 @@ export default function OnboardingPage() {
       weddingDate: weddingDate || undefined,
       country,
       city,
-      totalBudget,
+      totalBudget: String(totalBudget),
     });
     router.push("/dashboard");
   };
