@@ -1,4 +1,5 @@
 import { Injectable, NotFoundException } from "@nestjs/common";
+import { Prisma } from "@prisma/client";
 import { PrismaService } from "../prisma/prisma.service";
 import { UpdateWebsiteDto } from "./dto/update-website.dto";
 
@@ -17,7 +18,10 @@ export class WebsitesService {
 
   async update(weddingId: string, dto: UpdateWebsiteDto) {
     await this.getOrCreate(weddingId);
-    return this.prisma.weddingWebsite.update({ where: { weddingId }, data: dto });
+    return this.prisma.weddingWebsite.update({
+      where: { weddingId },
+      data: dto as Prisma.WeddingWebsiteUpdateInput,
+    });
   }
 
   async getPublic(subdomain: string) {

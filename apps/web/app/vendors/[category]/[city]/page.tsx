@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
 interface CategoryCityPageProps {
-  params: { category: string; city: string };
+  params: Promise<{ category: string; city: string }>;
 }
 
 function humanize(slug: string) {
@@ -11,9 +11,10 @@ function humanize(slug: string) {
     .join(" ");
 }
 
-export function generateMetadata({ params }: CategoryCityPageProps): Metadata {
-  const category = humanize(params.category);
-  const city = humanize(params.city);
+export async function generateMetadata({ params }: CategoryCityPageProps): Promise<Metadata> {
+  const { category: categorySlug, city: citySlug } = await params;
+  const category = humanize(categorySlug);
+  const city = humanize(citySlug);
   return {
     title: `Punjabi Wedding ${category} in ${city} | Sada Vyah`,
     description: `Browse top-rated Punjabi wedding ${category.toLowerCase()} in ${city}. Compare prices, photos and reviews — contact vendors directly, no booking fees.`,
@@ -26,9 +27,10 @@ const SAMPLE_VENDORS = [
   { name: "The Grand Marquee", rating: "4.8 (61)", price: "From £5,000" },
 ];
 
-export default function CategoryCityPage({ params }: CategoryCityPageProps) {
-  const category = humanize(params.category);
-  const city = humanize(params.city);
+export default async function CategoryCityPage({ params }: CategoryCityPageProps) {
+  const { category: categorySlug, city: citySlug } = await params;
+  const category = humanize(categorySlug);
+  const city = humanize(citySlug);
 
   return (
     <main className="mx-auto max-w-5xl px-6 py-12">

@@ -1,10 +1,12 @@
 "use client";
 
+import { useParams } from "next/navigation";
 import { useApplyEventTemplate, useChecklist } from "@/lib/hooks/useEvents";
 
-export default function EventDetailPage({ params }: { params: { id: string } }) {
-  const { data: checklist, isLoading } = useChecklist(params.id);
-  const applyTemplate = useApplyEventTemplate(params.id);
+export default function EventDetailPage() {
+  const { id } = useParams<{ id: string }>();
+  const { data: checklist, isLoading } = useChecklist(id);
+  const applyTemplate = useApplyEventTemplate(id);
 
   return (
     <main className="px-6 py-6">

@@ -10,9 +10,19 @@ export const VENDOR_PLAN_PRICES: Record<"SILVER" | "GOLD" | "PLATINUM", number> 
 
 @Injectable()
 export class SubscriptionsService {
-  private readonly stripe = new Stripe(process.env.STRIPE_SECRET_KEY ?? "");
+  private stripeClient: Stripe | null = null;
 
   constructor(private readonly prisma: PrismaService) {}
+
+  private get stripe(): Stripe {
+    if (!process.env.STRIPE_SECRET_KEY) {
+      throw new Error("STRIPE_SECRET_KEY is not configured");
+    }
+    if (!this.stripeClient) {
+      this.stripeClient = new Stripe(process.env.STRIPE_SECRET_KEY);
+    }
+    return this.stripeClient;
+  }
 
   getPlans() {
     return [

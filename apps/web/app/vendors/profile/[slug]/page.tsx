@@ -1,12 +1,13 @@
 interface VendorProfilePageProps {
-  params: { slug: string };
+  params: Promise<{ slug: string }>;
 }
 
-export default function VendorProfilePage({ params }: VendorProfilePageProps) {
+export default async function VendorProfilePage({ params }: VendorProfilePageProps) {
+  const { slug } = await params;
   return (
     <main className="mx-auto max-w-4xl px-6 py-12">
       <h1 className="font-heading text-4xl text-charcoal capitalize">
-        {params.slug.replace(/-/g, " ")}
+        {slug.replace(/-/g, " ")}
       </h1>
       <p className="mt-2 text-charcoal/60">Photography · London, UK</p>
 
