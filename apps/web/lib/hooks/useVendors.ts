@@ -82,3 +82,37 @@ export function useCreateVendor() {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["current-vendor"] }),
   });
 }
+
+export interface VendorPhoto {
+  id: string;
+  url: string;
+  sortOrder: number;
+}
+
+export interface VendorReview {
+  id: string;
+  rating: number;
+  title: string | null;
+  body: string | null;
+  createdAt: string;
+}
+
+export interface VendorDetail extends CurrentVendor {
+  photos: VendorPhoto[];
+  reviews: VendorReview[];
+}
+
+export function useVendorBySlug(slug: string) {
+  return useQuery({
+    queryKey: ["vendor", slug],
+    queryFn: () => api.get<VendorDetail>(`/vendors/${slug}`),
+    enabled: Boolean(slug),
+  });
+}
+
+export function useLogVendorAnalyticsEvent() {
+  return useMutation({
+    mutationFn: ({ vendorId, type }: { vendorId: string; type: string }) =>
+      api.post(`/vendors/${vendorId}/analytics-event`, { type }),
+  });
+}
