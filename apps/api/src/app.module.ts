@@ -11,6 +11,7 @@ import { TasksModule } from "./tasks/tasks.module";
 import { WebsitesModule } from "./websites/websites.module";
 import { AiModule } from "./ai/ai.module";
 import { AdminModule } from "./admin/admin.module";
+import { ContentModule } from "./content/content.module";
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { AdminModule } from "./admin/admin.module";
     WebsitesModule,
     AiModule,
     AdminModule,
+    ContentModule,
   ],
 })
 export class AppModule {}
