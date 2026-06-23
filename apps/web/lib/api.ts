@@ -6,10 +6,21 @@ class ApiError extends Error {
   }
 }
 
+let tokenGetter: (() => Promise<string | null>) | null = null;
+
+export function setApiTokenGetter(getter: (() => Promise<string | null>) | null) {
+  tokenGetter = getter;
+}
+
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
+  const token = tokenGetter ? await tokenGetter() : null;
   const res = await fetch(`${API_BASE_URL}${path}`, {
     ...init,
-    headers: { "content-type": "application/json", ...init?.headers },
+    headers: {
+      "content-type": "application/json",
+      ...(token ? { authorization: `Bearer ${token}` } : {}),
+      ...init?.headers,
+    },
   });
   if (!res.ok) {
     const body = await res.text();
