@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { Playfair_Display, Inter } from "next/font/google";
+import { ClerkProvider } from "@clerk/nextjs";
+import { Providers } from "./providers/Providers";
 import "./globals.css";
 
 const heading = Playfair_Display({ subsets: ["latin"], variable: "--font-heading" });
@@ -13,10 +15,12 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
-      <body className={`${heading.variable} ${body.variable} font-body bg-ivory text-charcoal`}>
-        {children}
-      </body>
-    </html>
+    <ClerkProvider>
+      <html lang="en">
+        <body className={`${heading.variable} ${body.variable} font-body bg-ivory text-charcoal`}>
+          <Providers>{children}</Providers>
+        </body>
+      </html>
+    </ClerkProvider>
   );
 }

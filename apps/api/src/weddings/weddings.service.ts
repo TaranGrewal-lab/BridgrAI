@@ -7,14 +7,20 @@ import { randomUUID } from "crypto";
 export class WeddingsService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async create(ownerId: string, dto: CreateWeddingDto) {
+  async createForClerkUser(clerkId: string, email: string | undefined, dto: CreateWeddingDto) {
+    const user = await this.prisma.user.upsert({
+      where: { clerkId },
+      create: { clerkId, email: email ?? `${clerkId}@placeholder.sadavyah.com` },
+      update: {},
+    });
+
     const slug = `${(dto.brideName ?? "wedding").toLowerCase().replace(/\s+/g, "-")}-${randomUUID().slice(0, 6)}`;
     return this.prisma.wedding.create({
       data: {
         ...dto,
         weddingDate: dto.weddingDate ? new Date(dto.weddingDate) : undefined,
         slug,
-        members: { create: { userId: ownerId, isOwner: true } },
+        members: { create: { userId: user.id, isOwner: true } },
       },
     });
   }

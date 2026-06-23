@@ -1,7 +1,9 @@
-import { Body, Controller, Delete, Get, Param, Patch } from "@nestjs/common";
+import { Body, Controller, Delete, Get, Param, Patch, UseGuards } from "@nestjs/common";
 import { AdminService } from "./admin.service";
+import { ClerkAuthGuard } from "../common/guards/clerk-auth.guard";
+import { AdminGuard } from "../common/guards/admin.guard";
 
-// All routes here are intended to sit behind an ADMIN-role guard in production.
+@UseGuards(ClerkAuthGuard, AdminGuard)
 @Controller("admin")
 export class AdminController {
   constructor(private readonly adminService: AdminService) {}

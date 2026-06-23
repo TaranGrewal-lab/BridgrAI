@@ -1,7 +1,9 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post } from "@nestjs/common";
+import { Body, Controller, Delete, Get, Param, Patch, Post, UseGuards } from "@nestjs/common";
 import { BudgetsService } from "./budgets.service";
 import { CreateBudgetItemDto } from "./dto/create-budget-item.dto";
+import { ClerkAuthGuard } from "../common/guards/clerk-auth.guard";
 
+@UseGuards(ClerkAuthGuard)
 @Controller()
 export class BudgetsController {
   constructor(private readonly budgetsService: BudgetsService) {}

@@ -1,7 +1,9 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post } from "@nestjs/common";
+import { Body, Controller, Delete, Get, Param, Patch, Post, UseGuards } from "@nestjs/common";
 import { TasksService } from "./tasks.service";
 import { CreateTaskDto } from "./dto/create-task.dto";
+import { ClerkAuthGuard } from "../common/guards/clerk-auth.guard";
 
+@UseGuards(ClerkAuthGuard)
 @Controller()
 export class TasksController {
   constructor(private readonly tasksService: TasksService) {}

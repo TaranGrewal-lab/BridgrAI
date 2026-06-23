@@ -26,4 +26,20 @@ export class EventsService {
       ),
     );
   }
+
+  findChecklist(eventId: string) {
+    return this.prisma.checklistItem.findMany({ where: { eventId }, orderBy: { sortOrder: "asc" } });
+  }
+
+  createChecklistItem(eventId: string, name: string) {
+    return this.prisma.checklistItem.create({ data: { eventId, name } });
+  }
+
+  updateChecklistItem(id: string, data: { name?: string; notes?: string; isComplete?: boolean }) {
+    return this.prisma.checklistItem.update({ where: { id }, data });
+  }
+
+  removeChecklistItem(id: string) {
+    return this.prisma.checklistItem.delete({ where: { id } });
+  }
 }
