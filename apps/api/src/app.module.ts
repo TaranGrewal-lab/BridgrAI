@@ -7,6 +7,10 @@ import { VendorsModule } from "./vendors/vendors.module";
 import { SubscriptionsModule } from "./subscriptions/subscriptions.module";
 import { GuestsModule } from "./guests/guests.module";
 import { BudgetsModule } from "./budgets/budgets.module";
+import { TasksModule } from "./tasks/tasks.module";
+import { WebsitesModule } from "./websites/websites.module";
+import { AiModule } from "./ai/ai.module";
+import { AdminModule } from "./admin/admin.module";
 
 @Module({
   imports: [
@@ -18,6 +22,10 @@ import { BudgetsModule } from "./budgets/budgets.module";
     SubscriptionsModule,
     GuestsModule,
     BudgetsModule,
+    TasksModule,
+    WebsitesModule,
+    AiModule,
+    AdminModule,
   ],
 })
 export class AppModule {}
