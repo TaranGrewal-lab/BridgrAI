@@ -1,0 +1,550 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ──────────────────────────────────────────────────────────────────────────
+// ENUMS
+// ──────────────────────────────────────────────────────────────────────────
+
+enum UserRole {
+  COUPLE
+  FAMILY_MEMBER
+  WEDDING_PLANNER
+  VENDOR
+  ADMIN
+}
+
+enum WeddingSide {
+  BRIDE
+  GROOM
+  SHARED
+}
+
+enum EventStatus {
+  PLANNING
+  CONFIRMED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+enum RsvpStatus {
+  ATTENDING
+  DECLINED
+  PENDING
+  NOT_INVITED
+}
+
+enum TaskPriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+enum TaskStatus {
+  TODO
+  IN_PROGRESS
+  DONE
+}
+
+enum BudgetItemStatus {
+  PLANNED
+  BOOKED
+  DEPOSIT_PAID
+  PAID_IN_FULL
+}
+
+enum VendorPlan {
+  FREE
+  SILVER
+  GOLD
+  PLATINUM
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  PAST_DUE
+  CANCELLED
+  TRIALING
+}
+
+enum PaymentStatus {
+  SUCCEEDED
+  PENDING
+  FAILED
+  REFUNDED
+}
+
+enum VerificationStatus {
+  UNVERIFIED
+  PENDING
+  VERIFIED
+  REJECTED
+}
+
+// ──────────────────────────────────────────────────────────────────────────
+// USERS & AUTH
+// ──────────────────────────────────────────────────────────────────────────
+
+model User {
+  id            String   @id @default(cuid())
+  clerkId       String   @unique
+  email         String   @unique
+  firstName     String?
+  lastName      String?
+  avatarUrl     String?
+  role          UserRole @default(COUPLE)
+  country       String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  weddingMemberships WeddingMember[]
+  vendor             Vendor?
+  adminProfile       AdminUser?
+  notifications      Notification[]
+  reviews            Review[]
+  auditLogs          AuditLog[]
+
+  @@index([role])
+}
+
+// ──────────────────────────────────────────────────────────────────────────
+// WEDDING / COUPLE
+// ──────────────────────────────────────────────────────────────────────────
+
+model Wedding {
+  id              String   @id @default(cuid())
+  slug            String   @unique
+  brideName       String?
+  groomName       String?
+  weddingDate     DateTime?
+  country         String?
+  city            String?
+  totalBudget     Decimal  @default(0) @db.Decimal(12, 2)
+  currency        String   @default("GBP")
+  coverImageUrl   String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  members         WeddingMember[]
+  events          Event[]
+  guests          Guest[]
+  tasks           Task[]
+  savedVendors    SavedVendor[]
+  website         WeddingWebsite?
+  budgetSummary   BudgetSummary?
+
+  @@index([weddingDate])
+}
+
+model WeddingMember {
+  id        String      @id @default(cuid())
+  weddingId String
+  userId    String
+  side      WeddingSide @default(SHARED)
+  isOwner   Boolean     @default(false)
+
+  wedding Wedding @relation(fields: [weddingId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([weddingId, userId])
+}
+
+model BudgetSummary {
+  id              String  @id @default(cuid())
+  weddingId       String  @unique
+  totalEstimated  Decimal @default(0) @db.Decimal(12, 2)
+  totalActual     Decimal @default(0) @db.Decimal(12, 2)
+  totalDeposits   Decimal @default(0) @db.Decimal(12, 2)
+  totalRemaining  Decimal @default(0) @db.Decimal(12, 2)
+  updatedAt       DateTime @updatedAt
+
+  wedding Wedding @relation(fields: [weddingId], references: [id], onDelete: Cascade)
+}
+
+// ──────────────────────────────────────────────────────────────────────────
+// EVENTS
+// ──────────────────────────────────────────────────────────────────────────
+
+model Event {
+  id          String      @id @default(cuid())
+  weddingId   String
+  name        String
+  eventType   String      // e.g. ROKA, ENGAGEMENT, MAIYAN_BRIDE, MAIYAN_GROOM, MEHNDI, JAGGO_BRIDE, JAGGO_GROOM, CHOORA, ANAND_KARAJ, RECEPTION, CIVIL_CEREMONY, CUSTOM
+  side        WeddingSide @default(SHARED)
+  date        DateTime?
+  startTime   String?
+  endTime     String?
+  venueName   String?
+  venueAddress String?
+  notes       String?
+  budget      Decimal     @default(0) @db.Decimal(12, 2)
+  status      EventStatus @default(PLANNING)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  wedding       Wedding        @relation(fields: [weddingId], references: [id], onDelete: Cascade)
+  budgetItems   BudgetItem[]
+  guestInvites  GuestInvite[]
+  savedVendors  SavedVendor[]
+  checklistItems ChecklistItem[]
+  timelineBlocks TimelineBlock[]
+
+  @@index([weddingId])
+  @@index([eventType])
+}
+
+model ChecklistItem {
+  id        String   @id @default(cuid())
+  eventId   String
+  name      String
+  notes     String?
+  isComplete Boolean @default(false)
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+
+  event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  @@index([eventId])
+}
+
+model TimelineBlock {
+  id        String   @id @default(cuid())
+  eventId   String
+  title     String
+  startTime String
+  endTime   String
+  sortOrder Int      @default(0)
+
+  event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  @@index([eventId])
+}
+
+// ──────────────────────────────────────────────────────────────────────────
+// BUDGET ITEMS
+// ──────────────────────────────────────────────────────────────────────────
+
+model BudgetItem {
+  id              String           @id @default(cuid())
+  eventId         String
+  name            String
+  category        String?
+  estimatedCost   Decimal          @default(0) @db.Decimal(12, 2)
+  actualCost      Decimal          @default(0) @db.Decimal(12, 2)
+  depositPaid     Decimal          @default(0) @db.Decimal(12, 2)
+  notes           String?
+  status          BudgetItemStatus @default(PLANNED)
+  vendorId        String?
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+
+  event  Event   @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  vendor Vendor? @relation(fields: [vendorId], references: [id])
+
+  @@index([eventId])
+}
+
+// ──────────────────────────────────────────────────────────────────────────
+// GUESTS & RSVPS
+// ──────────────────────────────────────────────────────────────────────────
+
+model Guest {
+  id           String      @id @default(cuid())
+  weddingId    String
+  name         String
+  phone        String?
+  email        String?
+  address      String?
+  relationship String?
+  side         WeddingSide @default(SHARED)
+  notes        String?
+  tags         String[]    @default([])
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  wedding Wedding       @relation(fields: [weddingId], references: [id], onDelete: Cascade)
+  invites GuestInvite[]
+
+  @@index([weddingId])
+}
+
+model GuestInvite {
+  id                   String     @id @default(cuid())
+  guestId              String
+  eventId              String
+  isInvited            Boolean    @default(true)
+  rsvpStatus           RsvpStatus @default(PENDING)
+  mealPreference       String?
+  specialRequirements  String?
+  plusOnes             Int        @default(0)
+  updatedAt            DateTime   @updatedAt
+
+  guest Guest @relation(fields: [guestId], references: [id], onDelete: Cascade)
+  event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  @@unique([guestId, eventId])
+  @@index([eventId])
+}
+
+// ──────────────────────────────────────────────────────────────────────────
+// TASKS
+// ──────────────────────────────────────────────────────────────────────────
+
+model Task {
+  id        String       @id @default(cuid())
+  weddingId String
+  title     String
+  notes     String?
+  priority  TaskPriority @default(MEDIUM)
+  status    TaskStatus   @default(TODO)
+  dueDate   DateTime?
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+
+  wedding Wedding @relation(fields: [weddingId], references: [id], onDelete: Cascade)
+
+  @@index([weddingId])
+}
+
+// ──────────────────────────────────────────────────────────────────────────
+// VENDORS
+// ──────────────────────────────────────────────────────────────────────────
+
+model VendorCategory {
+  id    String   @id @default(cuid())
+  name  String   @unique
+  slug  String   @unique
+  icon  String?
+
+  vendors Vendor[]
+}
+
+model Vendor {
+  id               String              @id @default(cuid())
+  userId           String              @unique
+  businessName     String
+  slug             String              @unique
+  logoUrl          String?
+  description      String?
+  categoryId       String
+  country          String
+  city             String
+  coverageArea     String?
+  phone            String?
+  email            String?
+  websiteUrl       String?
+  instagramUrl     String?
+  facebookUrl      String?
+  tiktokUrl        String?
+  googleMapsUrl    String?
+  priceRangeMin    Decimal?            @db.Decimal(12, 2)
+  priceRangeMax    Decimal?            @db.Decimal(12, 2)
+  servicesOffered  String[]            @default([])
+  verification     VerificationStatus  @default(UNVERIFIED)
+  isFeatured       Boolean             @default(false)
+  ratingAverage    Decimal             @default(0) @db.Decimal(3, 2)
+  ratingCount      Int                 @default(0)
+  createdAt        DateTime            @default(now())
+  updatedAt        DateTime            @updatedAt
+
+  user            User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  category        VendorCategory   @relation(fields: [categoryId], references: [id])
+  photos          VendorPhoto[]
+  reviews         Review[]
+  subscription    Subscription?
+  savedBy         SavedVendor[]
+  budgetItems     BudgetItem[]
+  analyticsEvents VendorAnalyticsEvent[]
+
+  @@index([categoryId])
+  @@index([country, city])
+  @@index([isFeatured])
+}
+
+model VendorPhoto {
+  id        String   @id @default(cuid())
+  vendorId  String
+  url       String
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+
+  vendor Vendor @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+
+  @@index([vendorId])
+}
+
+model Review {
+  id        String   @id @default(cuid())
+  vendorId  String
+  userId    String
+  rating    Int
+  title     String?
+  body      String?
+  createdAt DateTime @default(now())
+
+  vendor Vendor @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id])
+
+  @@index([vendorId])
+}
+
+model SavedVendor {
+  id        String   @id @default(cuid())
+  weddingId String
+  vendorId  String
+  eventId   String?
+  estimatedCost Decimal? @db.Decimal(12, 2)
+  notes     String?
+  createdAt DateTime @default(now())
+
+  wedding Wedding @relation(fields: [weddingId], references: [id], onDelete: Cascade)
+  vendor  Vendor  @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  event   Event?  @relation(fields: [eventId], references: [id])
+
+  @@unique([weddingId, vendorId, eventId])
+}
+
+model VendorAnalyticsEvent {
+  id        String   @id @default(cuid())
+  vendorId  String
+  type      String   // PROFILE_VIEW, WEBSITE_CLICK, PHONE_CLICK, EMAIL_CLICK, INSTAGRAM_CLICK
+  createdAt DateTime @default(now())
+
+  vendor Vendor @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+
+  @@index([vendorId, type])
+}
+
+// ──────────────────────────────────────────────────────────────────────────
+// SUBSCRIPTIONS & PAYMENTS (Platform advertising plans only — never wedding services)
+// ──────────────────────────────────────────────────────────────────────────
+
+model Subscription {
+  id                   String             @id @default(cuid())
+  vendorId             String             @unique
+  plan                 VendorPlan         @default(FREE)
+  status               SubscriptionStatus @default(ACTIVE)
+  stripeCustomerId     String?
+  stripeSubscriptionId String?
+  currentPeriodEnd     DateTime?
+  createdAt            DateTime           @default(now())
+  updatedAt            DateTime           @updatedAt
+
+  vendor   Vendor    @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  payments Payment[]
+}
+
+model Payment {
+  id              String        @id @default(cuid())
+  subscriptionId  String
+  amount          Decimal       @db.Decimal(12, 2)
+  currency        String        @default("GBP")
+  status          PaymentStatus @default(PENDING)
+  stripePaymentId String?
+  createdAt       DateTime      @default(now())
+
+  subscription Subscription @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
+}
+
+// ──────────────────────────────────────────────────────────────────────────
+// WEDDING WEBSITE
+// ──────────────────────────────────────────────────────────────────────────
+
+model WeddingWebsite {
+  id              String   @id @default(cuid())
+  weddingId       String   @unique
+  subdomain       String   @unique
+  customDomain    String?
+  theme           String   @default("ivory-classic")
+  storyContent    String?
+  venueInfo       String?
+  mapEmbedUrl     String?
+  registryLinks   Json?
+  accommodation   String?
+  isPublished     Boolean  @default(false)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  wedding Wedding @relation(fields: [weddingId], references: [id], onDelete: Cascade)
+}
+
+// ──────────────────────────────────────────────────────────────────────────
+// INSPIRATION GALLERY / BLOG / CMS
+// ──────────────────────────────────────────────────────────────────────────
+
+model GalleryImage {
+  id        String   @id @default(cuid())
+  category  String   // ROKA, ENGAGEMENT, MAIYAN, MEHNDI, JAGGO, CHOORA, ANAND_KARAJ, RECEPTION
+  imageUrl  String
+  caption   String?
+  vendorId  String?
+  createdAt DateTime @default(now())
+
+  @@index([category])
+}
+
+model BlogPost {
+  id          String   @id @default(cuid())
+  slug        String   @unique
+  title       String
+  excerpt     String?
+  body        String
+  coverImage  String?
+  publishedAt DateTime?
+  createdAt   DateTime @default(now())
+}
+
+model CmsPage {
+  id        String   @id @default(cuid())
+  slug      String   @unique
+  title     String
+  content   String
+  updatedAt DateTime @updatedAt
+}
+
+// ──────────────────────────────────────────────────────────────────────────
+// NOTIFICATIONS, ANALYTICS, AUDIT, ADMIN
+// ──────────────────────────────────────────────────────────────────────────
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  title     String
+  body      String?
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, isRead])
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  userId    String?
+  action    String
+  entity    String
+  entityId  String?
+  metadata  Json?
+  createdAt DateTime @default(now())
+
+  user User? @relation(fields: [userId], references: [id])
+
+  @@index([entity, entityId])
+}
+
+model AdminUser {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  permissions String[] @default([])
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
