@@ -20,6 +20,50 @@ export interface AdminReview {
   user: { email: string };
 }
 
+export interface AdminCouple {
+  id: string;
+  slug: string;
+  weddingDate: string | null;
+  totalBudget: string;
+  members: { user: { email: string }; isOwner: boolean }[];
+}
+
+export interface AdminSubscription {
+  id: string;
+  plan: string;
+  status: string;
+  vendor: { businessName: string };
+}
+
+export interface AdminPayment {
+  id: string;
+  amount: string;
+  status: string;
+  createdAt: string;
+  subscription: { vendor: { businessName: string } };
+}
+
+export function useAdminCouples() {
+  return useQuery({
+    queryKey: ["admin-couples"],
+    queryFn: () => api.get<AdminCouple[]>("/admin/couples"),
+  });
+}
+
+export function useAdminSubscriptions() {
+  return useQuery({
+    queryKey: ["admin-subscriptions"],
+    queryFn: () => api.get<AdminSubscription[]>("/admin/subscriptions"),
+  });
+}
+
+export function useAdminPayments() {
+  return useQuery({
+    queryKey: ["admin-payments"],
+    queryFn: () => api.get<AdminPayment[]>("/admin/payments"),
+  });
+}
+
 export interface AdminAnalyticsOverview {
   weddings: number;
   vendors: number;
