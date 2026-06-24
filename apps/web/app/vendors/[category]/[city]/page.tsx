@@ -1,7 +1,36 @@
 import type { Metadata } from "next";
 
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000/api/v1";
+
+// Top Punjabi-wedding-diaspora hub cities across UK/Canada/USA/India/Australia.
+const TOP_CITIES = [
+  "london",
+  "birmingham",
+  "toronto",
+  "vancouver",
+  "surrey",
+  "new-york",
+  "chandigarh",
+  "amritsar",
+  "jalandhar",
+  "melbourne",
+];
+
+// Highest-demand vendor categories — paired with TOP_CITIES this yields the
+// curated top-50 city x category SEO landing pages required by the MVP brief.
+const TOP_CATEGORIES = ["venues", "photographers", "decorators", "caterers", "djs"];
+
 interface CategoryCityPageProps {
   params: Promise<{ category: string; city: string }>;
+}
+
+interface SeoVendor {
+  id: string;
+  businessName: string;
+  slug: string;
+  ratingAverage: string;
+  ratingCount: number;
+  priceRangeMin: string | null;
 }
 
 function humanize(slug: string) {
@@ -9,6 +38,25 @@ function humanize(slug: string) {
     .split("-")
     .map((w) => w[0]?.toUpperCase() + w.slice(1))
     .join(" ");
+}
+
+export function generateStaticParams() {
+  return TOP_CATEGORIES.flatMap((category) =>
+    TOP_CITIES.map((city) => ({ category, city })),
+  );
+}
+
+async function fetchVendors(category: string, city: string): Promise<SeoVendor[]> {
+  try {
+    const res = await fetch(
+      `${API_BASE_URL}/vendors?category=${category}&city=${encodeURIComponent(humanize(city))}`,
+      { next: { revalidate: 3600 } },
+    );
+    if (!res.ok) return [];
+    return res.json();
+  } catch {
+    return [];
+  }
 }
 
 export async function generateMetadata({ params }: CategoryCityPageProps): Promise<Metadata> {
@@ -21,16 +69,11 @@ export async function generateMetadata({ params }: CategoryCityPageProps): Promi
   };
 }
 
-const SAMPLE_VENDORS = [
-  { name: "Royal Regency", rating: "4.9 (128)", price: "From £4,500" },
-  { name: "Heritage Banqueting Hall", rating: "4.7 (84)", price: "From £3,200" },
-  { name: "The Grand Marquee", rating: "4.8 (61)", price: "From £5,000" },
-];
-
 export default async function CategoryCityPage({ params }: CategoryCityPageProps) {
   const { category: categorySlug, city: citySlug } = await params;
   const category = humanize(categorySlug);
   const city = humanize(citySlug);
+  const vendors = await fetchVendors(categorySlug, citySlug);
 
   return (
     <main className="mx-auto max-w-5xl px-6 py-12">
@@ -46,16 +89,34 @@ export default async function CategoryCityPage({ params }: CategoryCityPageProps
         social media, with no booking fees or middlemen.
       </p>
 
-      <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-3">
-        {SAMPLE_VENDORS.map((v) => (
-          <div key={v.name} className="rounded-2xl border border-sage/30 bg-white p-5 shadow-sm">
-            <div className="mb-3 h-28 rounded-xl bg-blush/30" />
-            <p className="font-medium text-charcoal">{v.name}</p>
-            <p className="text-xs text-charcoal/50">{v.price}</p>
-            <p className="mt-1 text-xs text-gold">★ {v.rating}</p>
-          </div>
-        ))}
-      </div>
+      {vendors.length > 0 ? (
+        <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-3">
+          {vendors.map((v) => (
+            <a
+              key={v.id}
+              href={`/vendors/profile/${v.slug}`}
+              className="rounded-2xl border border-sage/30 bg-white p-5 shadow-sm"
+            >
+              <div className="mb-3 h-28 rounded-xl bg-blush/30" />
+              <p className="font-medium text-charcoal">{v.businessName}</p>
+              {v.priceRangeMin && (
+                <p className="text-xs text-charcoal/50">From £{v.priceRangeMin}</p>
+              )}
+              <p className="mt-1 text-xs text-gold">
+                ★ {v.ratingAverage} ({v.ratingCount})
+              </p>
+            </a>
+          ))}
+        </div>
+      ) : (
+        <p className="mt-8 text-sm text-charcoal/50">
+          No {category.toLowerCase()} listed in {city} yet — check back soon, or{" "}
+          <a href="/vendors" className="text-gold underline">
+            browse all vendors
+          </a>
+          .
+        </p>
+      )}
 
       <section className="mt-12">
         <h2 className="font-heading text-xl text-charcoal">Frequently Asked Questions</h2>
