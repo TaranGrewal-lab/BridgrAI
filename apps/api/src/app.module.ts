@@ -1,6 +1,7 @@
 import { Module } from "@nestjs/common";
 import { ConfigModule } from "@nestjs/config";
 import { PrismaModule } from "./prisma/prisma.module";
+import { WeddingAccessModule } from "./common/wedding-access.module";
 import { WeddingsModule } from "./weddings/weddings.module";
 import { EventsModule } from "./events/events.module";
 import { VendorsModule } from "./vendors/vendors.module";
@@ -17,6 +18,7 @@ import { ContentModule } from "./content/content.module";
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
     PrismaModule,
+    WeddingAccessModule,
     WeddingsModule,
     EventsModule,
     VendorsModule,

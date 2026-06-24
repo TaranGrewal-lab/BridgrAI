@@ -1,4 +1,4 @@
-import { Body, Controller, Post } from "@nestjs/common";
+import { Body, Controller, Post, UseGuards } from "@nestjs/common";
 import { AiService } from "./ai.service";
 import {
   ChecklistRequestDto,
@@ -6,7 +6,12 @@ import {
   GuestGroupingDto,
   VendorRecommendationDto,
 } from "./dto/ai.dto";
+import { ClerkAuthGuard } from "../common/guards/clerk-auth.guard";
 
+// Every route here calls the Anthropic API, which costs money per request —
+// left open, anyone could anonymously script-loop this endpoint and run up
+// the bill, so it requires a logged-in account like every other paid feature.
+@UseGuards(ClerkAuthGuard)
 @Controller("ai")
 export class AiController {
   constructor(private readonly aiService: AiService) {}

@@ -3,11 +3,15 @@ import { WeddingsService } from "./weddings.service";
 import { CreateWeddingDto } from "./dto/create-wedding.dto";
 import { ClerkAuthGuard } from "../common/guards/clerk-auth.guard";
 import { CurrentUser, AuthUser } from "../common/decorators/current-user.decorator";
+import { WeddingAccessService } from "../common/wedding-access.service";
 
 @UseGuards(ClerkAuthGuard)
 @Controller("weddings")
 export class WeddingsController {
-  constructor(private readonly weddingsService: WeddingsService) {}
+  constructor(
+    private readonly weddingsService: WeddingsService,
+    private readonly weddingAccess: WeddingAccessService,
+  ) {}
 
   @Post()
   create(@CurrentUser() user: AuthUser, @Body() dto: CreateWeddingDto) {
@@ -20,12 +24,14 @@ export class WeddingsController {
   }
 
   @Get(":id")
-  findOne(@Param("id") id: string) {
+  async findOne(@CurrentUser() user: AuthUser, @Param("id") id: string) {
+    await this.weddingAccess.assertWeddingMember(id, user.clerkId);
     return this.weddingsService.findOne(id);
   }
 
   @Get(":id/dashboard")
-  getDashboard(@Param("id") id: string) {
+  async getDashboard(@CurrentUser() user: AuthUser, @Param("id") id: string) {
+    await this.weddingAccess.assertWeddingMember(id, user.clerkId);
     return this.weddingsService.getDashboard(id);
   }
 }

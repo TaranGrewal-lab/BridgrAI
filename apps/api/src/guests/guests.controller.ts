@@ -3,49 +3,67 @@ import { GuestsService } from "./guests.service";
 import { CreateGuestDto } from "./dto/create-guest.dto";
 import { UpdateInviteDto } from "./dto/update-invite.dto";
 import { ClerkAuthGuard } from "../common/guards/clerk-auth.guard";
+import { CurrentUser, AuthUser } from "../common/decorators/current-user.decorator";
+import { WeddingAccessService } from "../common/wedding-access.service";
 
 @UseGuards(ClerkAuthGuard)
 @Controller()
 export class GuestsController {
-  constructor(private readonly guestsService: GuestsService) {}
+  constructor(
+    private readonly guestsService: GuestsService,
+    private readonly weddingAccess: WeddingAccessService,
+  ) {}
 
   @Get("weddings/:weddingId/guests")
-  findAll(@Param("weddingId") weddingId: string) {
+  async findAll(@CurrentUser() user: AuthUser, @Param("weddingId") weddingId: string) {
+    await this.weddingAccess.assertWeddingMember(weddingId, user.clerkId);
     return this.guestsService.findAllForWedding(weddingId);
   }
 
   @Post("weddings/:weddingId/guests")
-  create(@Param("weddingId") weddingId: string, @Body() dto: CreateGuestDto) {
+  async create(@CurrentUser() user: AuthUser, @Param("weddingId") weddingId: string, @Body() dto: CreateGuestDto) {
+    await this.weddingAccess.assertWeddingMember(weddingId, user.clerkId);
     return this.guestsService.create(weddingId, dto);
   }
 
   @Patch("guests/:id")
-  update(@Param("id") id: string, @Body() dto: Partial<CreateGuestDto>) {
+  async update(@CurrentUser() user: AuthUser, @Param("id") id: string, @Body() dto: Partial<CreateGuestDto>) {
+    await this.weddingAccess.assertGuestMember(id, user.clerkId);
     return this.guestsService.update(id, dto);
   }
 
   @Delete("guests/:id")
-  remove(@Param("id") id: string) {
+  async remove(@CurrentUser() user: AuthUser, @Param("id") id: string) {
+    await this.weddingAccess.assertGuestMember(id, user.clerkId);
     return this.guestsService.remove(id);
   }
 
   @Get("guests/:id/invites")
-  getInvitesForGuest(@Param("id") id: string) {
+  async getInvitesForGuest(@CurrentUser() user: AuthUser, @Param("id") id: string) {
+    await this.weddingAccess.assertGuestMember(id, user.clerkId);
     return this.guestsService.getInvitesForGuest(id);
   }
 
   @Get("events/:eventId/invites")
-  getInvitesForEvent(@Param("eventId") eventId: string) {
+  async getInvitesForEvent(@CurrentUser() user: AuthUser, @Param("eventId") eventId: string) {
+    await this.weddingAccess.assertEventMember(eventId, user.clerkId);
     return this.guestsService.getInvitesForEvent(eventId);
   }
 
   @Post("events/:eventId/invites")
-  assignGuestToEvent(@Param("eventId") eventId: string, @Body("guestId") guestId: string) {
+  async assignGuestToEvent(
+    @CurrentUser() user: AuthUser,
+    @Param("eventId") eventId: string,
+    @Body("guestId") guestId: string,
+  ) {
+    await this.weddingAccess.assertEventMember(eventId, user.clerkId);
+    await this.weddingAccess.assertGuestMember(guestId, user.clerkId);
     return this.guestsService.assignGuestToEvent(guestId, eventId);
   }
 
   @Patch("invites/:id")
-  updateInvite(@Param("id") id: string, @Body() dto: UpdateInviteDto) {
+  async updateInvite(@CurrentUser() user: AuthUser, @Param("id") id: string, @Body() dto: UpdateInviteDto) {
+    await this.weddingAccess.assertGuestInviteMember(id, user.clerkId);
     return this.guestsService.updateInvite(id, dto);
   }
 }
