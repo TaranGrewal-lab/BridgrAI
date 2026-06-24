@@ -203,13 +203,18 @@ export default function HomePage() {
       <footer className="border-t border-charcoal/10 px-6 py-12 text-center text-sm text-charcoal/60">
         <p className="font-heading text-lg text-charcoal">Sada Vyah</p>
         <nav className="mt-4 flex flex-wrap justify-center gap-6">
-          {["About", "Contact", "Blog", "Privacy Policy", "Terms & Conditions", "Vendor Sign Up"].map(
-            (l) => (
-              <Link key={l} href="#" className="hover:text-charcoal">
-                {l}
-              </Link>
-            ),
-          )}
+          {[
+            { label: "About", href: "#" },
+            { label: "Contact", href: "#" },
+            { label: "Blog", href: "#" },
+            { label: "Privacy Policy", href: "/privacy" },
+            { label: "Terms & Conditions", href: "/terms" },
+            { label: "Vendor Sign Up", href: "/vendor-onboarding" },
+          ].map((l) => (
+            <Link key={l.label} href={l.href} className="hover:text-charcoal">
+              {l.label}
+            </Link>
+          ))}
         </nav>
         <p className="mt-6">© {new Date().getFullYear()} Sada Vyah. Forever Starts Here.</p>
       </footer>

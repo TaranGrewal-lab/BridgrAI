@@ -85,10 +85,16 @@ async function main() {
     update: {},
   });
 
+  // Seed images use a placeholder service so the gallery isn't broken out of the
+  // box — real launch content should be uploaded via the admin gallery CMS.
   for (const category of GALLERY_CATEGORIES) {
     await prisma.galleryImage.upsert({
       where: { id: `seed-${category}` },
-      create: { id: `seed-${category}`, category, imageUrl: `/gallery/${category.toLowerCase()}.jpg` },
+      create: {
+        id: `seed-${category}`,
+        category,
+        imageUrl: `https://picsum.photos/seed/${category.toLowerCase()}/800/600`,
+      },
       update: {},
     });
   }

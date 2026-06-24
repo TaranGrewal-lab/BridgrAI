@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Playfair_Display, Inter } from "next/font/google";
 import { ClerkProvider } from "@clerk/nextjs";
 import { Providers } from "./providers/Providers";
+import { CookieConsent } from "@/components/marketing/CookieConsent";
 import "./globals.css";
 
 const heading = Playfair_Display({ subsets: ["latin"], variable: "--font-heading" });
@@ -19,6 +20,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <html lang="en">
         <body className={`${heading.variable} ${body.variable} font-body bg-ivory text-charcoal`}>
           <Providers>{children}</Providers>
+          <CookieConsent />
         </body>
       </html>
     </ClerkProvider>

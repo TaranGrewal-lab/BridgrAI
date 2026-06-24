@@ -54,6 +54,13 @@ export class SubscriptionsService {
     ];
   }
 
+  constructWebhookEvent(rawBody: Buffer, signature: string): Stripe.Event {
+    if (!process.env.STRIPE_WEBHOOK_SECRET) {
+      throw new Error("STRIPE_WEBHOOK_SECRET is not configured");
+    }
+    return this.stripe.webhooks.constructEvent(rawBody, signature, process.env.STRIPE_WEBHOOK_SECRET);
+  }
+
   async createCheckoutSession(vendorId: string, plan: "SILVER" | "GOLD" | "PLATINUM") {
     const session = await this.stripe.checkout.sessions.create({
       mode: "subscription",
