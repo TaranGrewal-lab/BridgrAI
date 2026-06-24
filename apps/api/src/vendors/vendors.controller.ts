@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post, Query, UseGuards } from "@nestjs/common";
+import { Body, Controller, ForbiddenException, Get, Param, Post, Query, UseGuards } from "@nestjs/common";
 import { VendorsService } from "./vendors.service";
 import { SearchVendorsDto } from "./dto/search-vendors.dto";
 import { CreateVendorDto } from "./dto/create-vendor.dto";
@@ -38,8 +38,14 @@ export class VendorsController {
     return this.vendorsService.logAnalyticsEvent(id, type);
   }
 
+  // Vendor's own dashboard data — not public, and only the owning vendor can see it.
+  @UseGuards(ClerkAuthGuard)
   @Get(":id/analytics")
-  getAnalytics(@Param("id") id: string) {
+  async getAnalytics(@CurrentUser() user: AuthUser, @Param("id") id: string) {
+    const vendor = await this.vendorsService.findMine(user.clerkId);
+    if (!vendor || vendor.id !== id) {
+      throw new ForbiddenException("You can only view your own vendor analytics");
+    }
     return this.vendorsService.getAnalytics(id);
   }
 }
