@@ -27,7 +27,19 @@ export class WebsitesService {
   async getPublic(subdomain: string) {
     const site = await this.prisma.weddingWebsite.findUnique({
       where: { subdomain },
-      include: { wedding: { include: { events: true } } },
+      include: {
+        wedding: {
+          select: {
+            brideName: true,
+            groomName: true,
+            weddingDate: true,
+            country: true,
+            city: true,
+            coverImageUrl: true,
+            events: true,
+          },
+        },
+      },
     });
     if (!site || !site.isPublished) throw new NotFoundException("Wedding website not found");
     return site;
